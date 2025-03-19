@@ -1,0 +1,8 @@
+{
+  "ton_domains": [
+    "ton",
+    "t.me"
+  ],
+  "ton_gateway": "https://gateway.ton.org",
+  "verbose_logging": false
+}
