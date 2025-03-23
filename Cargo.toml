@@ -1,0 +1,20 @@
+[package]
+name = "rusty-gate"
+version = "0.1.0"
+edition = "2021"
+description = "Entry proxy to TON (The Open Network) sites"
+authors = ["AIDev"]
+license = "MIT"
+
+[dependencies]
+tokio = { version = "1.28", features = ["full"] }
+hyper = { version = "0.14", features = ["full"] }
+hyper-tls = "0.5"
+http = "0.2"
+futures = "0.3"
+clap = { version = "4.3", features = ["derive"] }
+anyhow = "1.0"
+log = "0.4"
+env_logger = "0.10"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
