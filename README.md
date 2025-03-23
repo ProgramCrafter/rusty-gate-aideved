@@ -6,6 +6,7 @@ Application that works on user's computer and serves as entry proxy to TON (The 
 
 - HTTP/HTTPS proxy for accessing TON network sites
 - Special handling for TON domains
+- Direct connection to TON sites via ADNL protocol
 - Configurable via command-line arguments or configuration file
 - Verbose logging option for debugging
 
@@ -55,9 +56,18 @@ Example configuration file:
     "t.me"
   ],
   "ton_gateway": "https://gateway.ton.org",
-  "verbose_logging": false
+  "verbose_logging": false,
+  "adnl_addresses": {
+    "foundation.ton": "516618CF6CBE9004F6883E742C9A2E3CA53ED02E3E36F4CEF62A98EE1E449174"
+  }
 }
 ```
+
+#### ADNL Support
+
+The proxy can connect directly to TON sites using the ADNL protocol. To use this feature, add the ADNL address for the domain in the configuration file. The proxy will attempt to connect using ADNL first, and fall back to the TON gateway if the ADNL connection fails.
+
+By default, the proxy includes the ADNL address for `foundation.ton`.
 
 ### Logging
 

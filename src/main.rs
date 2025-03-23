@@ -1,9 +1,10 @@
 mod config;
+mod adnl;
 
+use adnl::connect_to_adnl;
 use anyhow::{Context, Result, anyhow};
 use clap::Parser;
 use config::Config;
-use futures::future::try_join;
 use http::{Request, Response, StatusCode, Uri, Method};
 use hyper::service::{make_service_fn, service_fn};
 use hyper::upgrade::Upgraded;
@@ -193,7 +194,7 @@ async fn handle_connect(req: Request<Body>) -> Result<Response<Body>> {
 }
 
 /// Create a tunnel between the client and the target server
-async fn tunnel(mut upgraded: Upgraded, addr: String) -> Result<()> {
+async fn tunnel(upgraded: Upgraded, addr: String) -> Result<()> {
     // Connect to the target server
     let mut server = TcpStream::connect(addr).await?;
     
@@ -261,7 +262,7 @@ async fn proxy_internal(
     
     if state.config.verbose_logging {
         debug!(
-            "Received request: {} {} {}",
+            "Received request: {} {} {:?}",
             req.method(),
             uri,
             req.version()
@@ -275,7 +276,28 @@ async fn proxy_internal(
     if is_ton_domain {
         info!("Handling TON domain request: {}", uri);
         
-        // Modify the request to go through the TON gateway
+        // Check if we have an ADNL address for this domain
+        if let Some(adnl_address) = state.config.get_adnl_address(host) {
+            info!("Using ADNL connection for domain: {}", host);
+            
+            // Connect to the TON site using ADNL
+            let path = uri.path();
+            let query = uri.query();
+            
+            match connect_to_adnl(adnl_address, host, path, query).await {
+                Ok(response) => {
+                    info!("ADNL connection successful");
+                    return Ok(response);
+                }
+                Err(e) => {
+                    error!("ADNL connection failed: {}", e);
+                    // Fall back to TON gateway
+                    warn!("Falling back to TON gateway");
+                }
+            }
+        }
+        
+        // If ADNL connection failed or no ADNL address is available, use the TON gateway
         let new_uri = rewrite_ton_uri(&uri, &state.config.ton_gateway)?;
         
         if state.config.verbose_logging {
